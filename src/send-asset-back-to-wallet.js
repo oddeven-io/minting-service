@@ -6,7 +6,7 @@ const sender = cardanoCLI.wallet("TestWallet")
 console.log("Balance of sender wallet: " + cardanoCLI.toAda(sender.balance().value.lovelace) + " ADA")
 
 // 2. define the transaction
-const receiverAddr = "addr_test1qzjlc05tyyw264wy7m4u7np5yqdwglks0xhu6765cl4qex9r9kvav4hmznru9px9n7cpa2hmmv4593eegve3t834xppqwskp4t" // the address of the receiver
+const receiverAddr = "addr_test1qpw42erzzc279g8vvqdh8rp4mw5ktn2e8mm9yrjsfamnuqgjmjc4mzccr4fvahxccrsk9mhnwr6xxjcrqddm6nsdl9vq6dn02d" // the address of the receiver
 
 // depending on amount of metadata, generally not lower than 1.5 ada, min to be sent along with native asset
 // in future we can also pay with native assets (babel fees)

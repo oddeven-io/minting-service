@@ -8,7 +8,7 @@ const mainNetwork = "mainnet"
 
 const dir = path.join(os.homedir(), "cardano-node-testnet");
 
-const testShelleyPath = path.join(
+const testnetShelleyPath = path.join(
   os.homedir(),
   "cardano-node-testnet",
   "testnet-shelley-genesis.json"
@@ -17,7 +17,7 @@ const testShelleyPath = path.join(
 const cardanoCLI = new CardanocliJs({
     network: testNetwork,
     dir: dir,
-    shelleyGenesisPath: testShelleyPath,
+    shelleyGenesisPath: testnetShelleyPath,
     socketPath: path.join(os.homedir(), "cardano-node-testnet", "db", "node.socket")
 });
 

@@ -35,15 +35,16 @@ console.log("asset id: \n" + ASSET_ID)
 
 // 6. Define metadata
 
+// TODO: Check if this metadata format is correct
 const metadata = {
     721: {
-        [POLICY_ID]: {
-            [ASSET_NAME]: {
-                name: ASSET_NAME,
-                image: "ipfs://QmShqccBVuntaxDvGA8KGdFdG7jWDCSGYw5NtBvBoXMHbV",
-                description: "Super Fancy Berry Space Green NFT",
+        [POLICY_ID]: { // this
+            [ASSET_NAME]: { // this
+                name: ASSET_NAME, // this
+                image: "ipfs://QmShqccBVuntaxDvGA8KGdFdG7jWDCSGYw5NtBvBoXMHbV", // thumbnail
+                description: "Our first NFT created using the Cardano JS CLI wrapper",
                 type: "image/png",
-                src: "ipfs://QmShqccBVuntaxDvGA8KGdFdG7jWDCSGYw5NtBvBoXMHbV",
+                src: "ipfs://QmShqccBVuntaxDvGA8KGdFdG7jWDCSGYw5NtBvBoXMHbV", // full size image
                 // other properties of your choice
                 authors: ["PK", "CS"]
             }

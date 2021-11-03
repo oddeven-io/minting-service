@@ -39,7 +39,7 @@ let fee = cardanoCLI.transactionCalculateMinFee({
     ...txInfo,
     txBody: raw,
     witnessCount: 1,
-});
+})
 
 // 5. pay the fee by subtracting it from the sender utxo
 txInfo.txOut[0].value.lovelace -= fee;

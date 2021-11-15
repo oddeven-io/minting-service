@@ -1,9 +1,21 @@
 {
+  "name": "minting-service",
+  "version": "1.0.0",
+  "description": "A backend service for interacting minting a Cardano node.",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon -L index.js"
+  },
+  "author": "Philip Krück",
+  "license": "MIT",
   "dependencies": {
+    "@google-cloud/firestore": "^4.15.1",
+    "nodemon": "^2.0.14",
     "@pinata/sdk": "^1.1.23",
     "axios": "^0.24.0",
     "cardanocli-js": "^4.0.1",
     "dotenv": "^10.0.0",
+    "firebase-admin": "^10.0.0",
     "form-data": "^4.0.0",
     "lodash": "^4.17.21",
     "promise-parallel-throttle": "^3.3.0",

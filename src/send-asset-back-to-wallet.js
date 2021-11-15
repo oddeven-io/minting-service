@@ -1,61 +1,81 @@
 const cardanoCLI = require("./cardanoCLI")
 
-// 1. get the sender's wallet
-const sender = cardanoCLI.wallet("TestWallet")
+// 1. get wallet
+const wallet = cardanoCLI.wallet("TestWallet");
 
-console.log("Balance of sender wallet: " + cardanoCLI.toAda(sender.balance().value.lovelace) + " ADA")
+function sendAssetBackToWallet(receiverAddress, assetName) {
+    logWalletBalance()
+    const txInfo = getTransactionInfo(receiverAddress, assetName)
+    console.log(`txInfo: \n${JSON.stringify(txInfo)}`)
 
-// 2. define the transaction
-const receiverAddr = "addr_test1qpw42erzzc279g8vvqdh8rp4mw5ktn2e8mm9yrjsfamnuqgjmjc4mzccr4fvahxccrsk9mhnwr6xxjcrqddm6nsdl9vq6dn02d" // the address of the receiver
-
-// depending on amount of metadata, generally not lower than 1.5 ada, min to be sent along with native asset
-// in future we can also pay with native assets (babel fees)
-const minLovelaceAmount = cardanoCLI.toLovelace(1.5)
-
-const txInfo = {
-    txIn: cardanoCLI.queryUtxo(sender.paymentAddr),
-    txOut: [
-        {
-            address: sender.paymentAddr,
-            value: {
-                lovelace: sender.balance().value.lovelace - minLovelaceAmount,
-            },
-        },
-        {
-            address: receiverAddr,
-            value: {
-                lovelace: minLovelaceAmount,
-                "f21547d7823d01758bd2b50d556fce54edbfe003442ca214c2a0ee5c.MyNFT": 1 // TODO: add asset id from minting
-            }
-        }
-    ]
+    const raw = cardanoCLI.transactionBuildRaw(txInfo)
+    const fee = calculateFee(txInfo, raw)
+    txInfo.txOut[0].value.lovelace -= fee; // pay the fee by subtracting it from the sender utxo
+    const tx = cardanoCLI.transactionBuildRaw({ ...txInfo, fee }); // create final transaction
+    const txSigned = signTransaction(tx)
+    const txHash = cardanoCLI.transactionSubmit(txSigned);
+    return txHash
 }
 
-// 3. build the transaction
-let raw = cardanoCLI.transactionBuildRaw(txInfo);
+function logWalletBalance() {
+    console.log(
+        "Balance of Sender wallet: " +
+          cardanoCLI.toAda(wallet.balance().value.lovelace) +
+          " ADA"
+      );
+}
 
-// 4. calculate the fee
-let fee = cardanoCLI.transactionCalculateMinFee({
-    ...txInfo,
-    txBody: raw,
-    witnessCount: 1,
-})
+function getTransactionInfo(receiverAddress, assetName) {
+    const [txOutValueOne, txInValueTwo] = getTxOutValues(assetName)
+    console.log(txOutValueOne)
+    console.log(txInValueTwo)
 
-// 5. pay the fee by subtracting it from the sender utxo
-txInfo.txOut[0].value.lovelace -= fee;
+    return {
+        txIn: cardanoCLI.queryUtxo(wallet.paymentAddr),
+        txOut: [
+          {
+            address: wallet.paymentAddr,
+            value: txOutValueOne,
+          },
+          {
+            address: receiverAddress,
+            value: txInValueTwo,
+          },
+        ],
+    };
+}
 
+function getTxOutValues(assetName) {
+  const txOutValues = wallet.balance().value
+  console.log(txOutValues)
+  if (!txOutValues[assetName]) {
+    console.log("Asset name does not exist in wallet")
+  }
 
-// 6. build the final transaction
-let tx = cardanoCLI.transactionBuildRaw({ ...txInfo, fee })
+  delete txOutValues[assetName]
+  txOutValues.lovelace -= cardanoCLI.toLovelace(1.5)
 
-// 7. sign the transaction
-let txSigned = cardanoCLI.transactionSign({
-    txBody: tx,
-    signingKeys: [sender.payment.skey],
-});
-  
+  const txInValues = {
+      lovelace: cardanoCLI.toLovelace(1.5),
+      [assetName]: 1
+  }
 
-// 8. submit the transaction
-let txHash = cardanoCLI.transactionSubmit(txSigned);
-console.log("TxHash: " + txHash);
+  return [txOutValues, txInValues]
+}
 
+function calculateFee(txInfo, raw) {
+    return cardanoCLI.transactionCalculateMinFee({
+        ...txInfo,
+        txBody: raw,
+        witnessCount: 1,
+      });
+}
+
+function signTransaction(tx) {
+    return cardanoCLI.transactionSign({
+        txBody: tx,
+        signingKeys: [wallet.payment.skey],
+    });
+}
+
+module.exports = { sendAssetBackToWallet }

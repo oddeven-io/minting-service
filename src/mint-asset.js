@@ -1,79 +1,66 @@
 const cardanoCLI = require("./cardanoCLI")
 
-console.log("start minting nft...")
+function mintAsset(title, description, ipfs) {
+    console.log("start minting nft...")
+    const wallet = cardanoCLI.wallet("TestWallet") // 1. Get the wallet
+    const mintScript = getMintScript(wallet) // 2. Define mint script
+    const POLICY_ID = cardanoCLI.transactionPolicyid(mintScript) // 3. Create POLICY_ID
+    const ASSET_NAME = removeWhiteSpaces(title) // 4. Define ASSET_NAME
+    const ASSET_ID = POLICY_ID + "." + ASSET_NAME // 5. Create ASSET_ID
+    const metadata = getMetaData(POLICY_ID, ASSET_NAME, title, description, ipfs) // 6. Define metadata
+    const tx = defineTransaction(wallet, ASSET_ID, metadata, mintScript) // 7. Define transaction
+    const raw = buildTransaction(tx) // 8. Build transaction
+    const signed = signTransaction(wallet, raw) // 9. Sign transaction
+    const txHash = cardanoCLI.transactionSubmit(signed) // 10. Submit transaction
 
-// 1. Get the wallet
-
-const wallet = cardanoCLI.wallet("TestWallet")
-
-// 2. Define mint script
-
-const mintScript = {
-    keyHash: cardanoCLI.addressKeyHash(wallet.name),
-    type: "sig"
+    return [txHash, ASSET_ID]
 }
 
-console.log("mint script: \n" + mintScript)
+const removeWhiteSpaces = (string) => string.replace(/\s/g, "")
 
-// 3. Create POLICY_ID
+function getMintScript(wallet) {
+    return {
+        keyHash: cardanoCLI.addressKeyHash(wallet.name),
+        type: "sig"
+    }
+}
 
-const POLICY_ID = cardanoCLI.transactionPolicyid(mintScript)
-
-console.log("policy id: \n" + POLICY_ID)
-
-// 4. Define ASSET_NAME
-
-const ASSET_NAME = "MyNFT"
-
-console.log("asset name: \n" + ASSET_NAME)
-
-// 5. Create ASSET_ID
-
-const ASSET_ID = POLICY_ID + "." + ASSET_NAME
-
-console.log("asset id: \n" + ASSET_ID)
-
-// 6. Define metadata
-
-// TODO: Check if this metadata format is correct
-const metadata = {
-    721: {
-        [POLICY_ID]: { // this
-            [ASSET_NAME]: { // this
-                name: ASSET_NAME, // this
-                image: "ipfs://QmShqccBVuntaxDvGA8KGdFdG7jWDCSGYw5NtBvBoXMHbV", // thumbnail
-                description: "Our first NFT created using the Cardano JS CLI wrapper",
-                type: "image/png",
-                src: "ipfs://QmShqccBVuntaxDvGA8KGdFdG7jWDCSGYw5NtBvBoXMHbV", // full size image
-                // other properties of your choice
-                authors: ["PK", "CS"]
+function getMetaData(policyId, assetName, title, description, ipfs) {
+    // TODO: Check if this metadata format is correct
+    return {
+        721: {
+            [policyId]: { // this
+                [assetName]: { // this
+                    name: assetName, // this
+                    title: title,
+                    image: ipfs, // thumbnail
+                    description: description,
+                    type: "image/png",
+                    src: ipfs, // full size image
+                    // other properties of your choice
+                    authors: ["PK", "CS"]
+                }
             }
         }
     }
 }
 
-console.log("metadata: \n" + metadata)
-
-// 7. Define transaction
-
-const tx = {
-    txIn: wallet.balance().utxo,
-    txOut: [
-        {
-            address: wallet.paymentAddr,
-            value: { ...wallet.balance().value, [ASSET_ID]: 1 }
-        }
-    ],
-    mint: [
-        { action: "mint", quantity: 1, asset: ASSET_ID, script: mintScript }
-    ],
-    metadata,
-    witnessCount: 2,
+function defineTransaction(wallet, assetID, metadata, mintScript) {
+    return {
+        txIn: wallet.balance().utxo,
+        txOut: [
+            {
+                address: wallet.paymentAddr,
+                value: { ...wallet.balance().value, [assetID]: 1 }
+            }
+        ],
+        mint: [
+            { action: "mint", quantity: 1, asset: assetID, script: mintScript }
+        ],
+        metadata,
+        witnessCount: 2,
+    }
 }
-
-console.log("transaction: \n" + tx)
-
-// 8. Build transaction
 
 const buildTransaction = (tx) => {
 
@@ -88,12 +75,6 @@ const buildTransaction = (tx) => {
     return cardanoCLI.transactionBuildRaw({ ...tx, fee })
 }
 
-const raw = buildTransaction(tx)
-
-console.log("raw transaction: \n" + raw)
-
-// 9. Sign transaction
-
 const signTransaction = (wallet, tx, script) => {
 
     return cardanoCLI.transactionSign({
@@ -102,12 +83,4 @@ const signTransaction = (wallet, tx, script) => {
     })
 }
 
-const signed = signTransaction(wallet, raw)
-
-console.log("signed transaction: \n" + signed)
-
-// 10. Submit transaction
-
-const txHash = cardanoCLI.transactionSubmit(signed)
-
-console.log("transaction hash:" + txHash)
+module.exports = { mintAsset }

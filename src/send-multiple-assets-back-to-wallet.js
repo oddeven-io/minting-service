@@ -73,6 +73,6 @@ function sendAssets({ receiver, assets }) {
 }
 
 sendAssets({
-    receiver: "addr_test1qpw42erzzc279g8vvqdh8rp4mw5ktn2e8mm9yrjsfamnuqgjmjc4mzccr4fvahxccrsk9mhnwr6xxjcrqddm6nsdl9vq6dn02d",
+    receiver: "addr_test1qz9pmjzuzsy6ef8pkx5kzhqaq266hxlnd9tmnm5m5pk50dc3ptne7065v20s5jgcej6rszj357jup8d298erdz2d8v4s0j5pkp",
     assets: assets.map(asset => asset.id)
 })
